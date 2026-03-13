@@ -5,9 +5,17 @@ function isPublicPath(pathname: string, basePath: string): boolean {
 	const base = basePath.replace(/\/$/, "");
 
 	if (pathname === base || pathname === `${base}/`) return false;
+
+	// Auth pages
 	if (pathname === `${base}/login`) return true;
 	if (pathname === `${base}/api/login`) return true;
 	if (pathname === `${base}/api/logout`) return true;
+
+	// Public API endpoints for storage operations (used by external apps)
+	if (pathname === `${base}/api/upload`) return true;
+	if (pathname === `${base}/api/multipart-upload`) return true;
+	if (pathname === `${base}/api/list-assets`) return true;
+	if (pathname === `${base}/api/asset`) return true;
 
 	// Static assets
 	if (pathname.startsWith(`${base}/_astro/`)) return true;
@@ -27,16 +35,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	}
 
 	const { pathname, search } = new URL(context.request.url);
-
-	// Allow public asset retrieval (download/view) without login.
-	// Keeps uploads and other API routes protected.
-	const base = config.basePath.replace(/\/$/, "");
-	if (
-		pathname === `${base}/api/asset` &&
-		(context.request.method === "GET" || context.request.method === "HEAD")
-	) {
-		return next();
-	}
 
 	if (isPublicPath(pathname, config.basePath)) {
 		return next();
