@@ -257,7 +257,7 @@ export default function FileUploader() {
           color: "#333",
         }}
       >
-        File Upload Demo
+        BRND WGN Object Storage - File Uploader
       </h2>
 
       {/* Upload Mode Toggle */}
