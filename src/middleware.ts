@@ -27,6 +27,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
 	}
 
 	const { pathname, search } = new URL(context.request.url);
+
+	// Allow public asset retrieval (download/view) without login.
+	// Keeps uploads and other API routes protected.
+	const base = config.basePath.replace(/\/$/, "");
+	if (
+		pathname === `${base}/api/asset` &&
+		(context.request.method === "GET" || context.request.method === "HEAD")
+	) {
+		return next();
+	}
+
 	if (isPublicPath(pathname, config.basePath)) {
 		return next();
 	}
