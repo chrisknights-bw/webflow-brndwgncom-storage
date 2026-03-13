@@ -4,14 +4,31 @@ import Layout from "../layouts/Layout.astro";
 const basePath = Astro.locals.runtime?.env?.ASSETS_PREFIX || "/app";
 const next = Astro.url.searchParams.get("next") || `${basePath}/`;
 const error = Astro.url.searchParams.get("error");
+
+const logoSrc = Astro.locals.runtime?.env?.LOGO as string | undefined;
+const buttonColor = (Astro.locals.runtime?.env?.BUTTON_COLOR as string | undefined) || "#111827";
+const buttonTextColor = (Astro.locals.runtime?.env?.BUTTON_TEXT_COLOR as string | undefined) || "#ffffff";
 ---
 
 <Layout title="Login">
-	<div class="min-h-screen flex items-center justify-center p-6">
-		<div class="card w-full max-w-md bg-base-100 shadow-xl">
+	<div class="min-h-screen flex items-center justify-center p-4 sm:p-6">
+		<div class="w-full max-w-md">
+			{logoSrc ? (
+				<div class="flex justify-center mb-6">
+					<img
+						src={logoSrc}
+						alt="Logo"
+						class="max-h-16 sm:max-h-20 w-auto object-contain"
+						loading="eager"
+						decoding="async"
+					/>
+				</div>
+			) : null}
+
+		<div class="card w-full bg-base-100 shadow-xl">
 			<div class="card-body">
-				<h1 class="card-title text-2xl">Sign in</h1>
-				<p class="text-sm text-base-content/70">Enter your credentials to access the uploader.</p>
+				<h1 class="text-2xl font-bold">Sign in</h1>
+				<p class="text-sm text-base-content/70">Log in to access the file uploader.</p>
 
 				{error ? (
 					<div class="alert alert-error mt-4">
@@ -43,9 +60,30 @@ const error = Astro.url.searchParams.get("error");
 						/>
 					</div>
 
-					<button type="submit" class="btn btn-primary w-full">Login</button>
+					<button
+						type="submit"
+						class="btn w-full border-0"
+						style={`background-color: ${buttonColor}; color: ${buttonTextColor};`}
+					>
+						Login
+					</button>
 				</form>
+
+				<div class="mt-4 text-xs text-base-content/60">
+					<form method="get" action={`${basePath}/api/logout`}>
+						<button class="link link-hover" type="submit">Need to switch accounts? Logout</button>
+					</form>
+				</div>
 			</div>
+		</div>
 		</div>
 	</div>
 </Layout>
+
+<style>
+	:global(body) {
+		background:
+			radial-gradient(1200px circle at 50% -200px, rgba(59, 130, 246, 0.18), transparent 55%),
+			radial-gradient(900px circle at 110% 10%, rgba(168, 85, 247, 0.14), transparent 50%);
+	}
+</style>
