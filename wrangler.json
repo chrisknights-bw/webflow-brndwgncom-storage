@@ -14,7 +14,8 @@
   "r2_buckets": [
     {
       "binding": "CLOUD_FILES",
-      "bucket_name": "brndwgncom-cloud-files"
+      "bucket_name": "brndwgncom-cloud-files",
+      "bucket_id": "123456789"
     }
   ]
 }
