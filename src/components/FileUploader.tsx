@@ -527,7 +527,9 @@ export default function FileUploader() {
               const fileLink =
                 file.link ||
                 (file.key
-                  ? `${import.meta.env.ASSETS_PREFIX}/api/asset?key=${file.key}`
+                  ? `${import.meta.env.ASSETS_PREFIX}/api/asset?key=${encodeURIComponent(
+                      file.key
+                    )}`
                   : "");
               const uploadDate =
                 file.dateUploaded || file.uploaded || new Date().toISOString();
@@ -605,30 +607,90 @@ export default function FileUploader() {
                     >
                       {formatDate(uploadDate)}
                     </p>
-                    <a
-                      href={fileLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <div
                       style={{
-                        display: "inline-block",
-                        padding: "6px 12px",
-                        backgroundColor: "#146ef5",
-                        color: "white",
-                        textDecoration: "none",
-                        borderRadius: "4px",
-                        fontSize: "0.8rem",
-                        fontWeight: "500",
-                        transition: "background-color 0.3s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#2c80fd";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "#146ef5";
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "0.5rem",
                       }}
                     >
-                      View
-                    </a>
+                      <a
+                        href={fileLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          flex: 1,
+                          textAlign: "center",
+                          padding: "6px 12px",
+                          backgroundColor: "#146ef5",
+                          color: "white",
+                          textDecoration: "none",
+                          borderRadius: "4px",
+                          fontSize: "0.8rem",
+                          fontWeight: "500",
+                          transition: "background-color 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#2c80fd";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "#146ef5";
+                        }}
+                      >
+                        View
+                      </a>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const key = fileKey;
+                          if (!key) return;
+
+                          const confirmed = window.confirm(
+                            `Delete "${fileName}"? This cannot be undone.`
+                          );
+                          if (!confirmed) return;
+
+                          try {
+                            const res = await fetch(
+                              `${import.meta.env.ASSETS_PREFIX}/api/asset?key=${encodeURIComponent(
+                                key
+                              )}`,
+                              { method: "DELETE" }
+                            );
+
+                            if (!res.ok) {
+                              throw new Error("Failed to delete asset");
+                            }
+
+                            await loadFiles();
+                          } catch (err) {
+                            console.error("Error deleting asset:", err);
+                            alert("Failed to delete asset. Please try again.");
+                          }
+                        }}
+                        style={{
+                          padding: "6px 10px",
+                          backgroundColor: "#dc2626",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          fontSize: "0.75rem",
+                          fontWeight: "500",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                          transition: "background-color 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "#b91c1c";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "#dc2626";
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
