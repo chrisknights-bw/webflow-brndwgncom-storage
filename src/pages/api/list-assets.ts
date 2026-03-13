@@ -1,20 +1,11 @@
 import type { APIRoute } from "astro";
-import { API } from "../../utils/api";
 
-export const GET: APIRoute = async ({ locals, request }) => {
-  try {
-    // Set the origin for the API
-    API.init((locals.runtime as any).env.ORIGIN);
-
-    // Handle CORS preflight requests
-    if (request.method === "OPTIONS") {
-      console.log("CORS preflight request from:", request.headers.get("Origin"));
-      return API.cors(request);
-    }
+export const GET: APIRoute = async ({ request, locals }) => {
+try {
     // Check if bucket is available
     const bucket = locals.runtime.env.CLOUD_FILES;
     if (!bucket) {
-      return new Response("Cloud storage not configured", { status: 500 });
+    return new Response("Cloud storage not configured", { status: 500 });
     }
 
     const options = { limit: 500 };
@@ -26,23 +17,23 @@ export const GET: APIRoute = async ({ locals, request }) => {
     let cursor = truncated ? listed.cursor : undefined;
 
     while (truncated) {
-      const next = await bucket.list({
+    const next = await bucket.list({
         ...options,
         cursor: cursor,
-      });
-      listed.objects.push(...next.objects);
+    });
+    listed.objects.push(...next.objects);
 
-      truncated = next.truncated;
-      // @ts-ignore
-      cursor = next.cursor;
+    truncated = next.truncated;
+    // @ts-ignore
+    cursor = next.cursor;
     }
 
     // Return the files as a JSON object
     return new Response(JSON.stringify(listed.objects), {
-      headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
+} catch (error) {
     console.error("Error listing assets:", error);
     return new Response("Failed to list assets", { status: 500 });
-  }
+}
 };
