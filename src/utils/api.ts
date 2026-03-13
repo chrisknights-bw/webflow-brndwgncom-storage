@@ -1,7 +1,7 @@
 // API Response utilities for consistent handling across endpoints
 export const API = {
-  // Allowed origins - always includes localhost for development
-  allowedOrigins: ["http://localhost:4321", "http://localhost:8787"],
+  // Allowed origins - "*" means allow all (default for simplicity)
+  allowedOrigins: ["*"],
 
   // CORS headers
   corsHeaders: {
@@ -20,8 +20,12 @@ export const API = {
     if (request) {
       const origin = request.headers.get("Origin");
       if (origin && API.isAllowedOrigin(origin)) {
-        headers["Access-Control-Allow-Origin"] = origin;
+        headers["Access-Control-Allow-Origin"] = API.allowedOrigins.includes("*")
+          ? "*"
+          : origin;
       }
+    } else if (API.allowedOrigins.includes("*")) {
+      headers["Access-Control-Allow-Origin"] = "*";
     }
 
     return new Response(JSON.stringify(data), {
@@ -57,7 +61,9 @@ export const API = {
           status: 200,
           headers: {
             ...API.corsHeaders,
-            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Origin": API.allowedOrigins.includes("*")
+              ? "*"
+              : origin,
           },
         });
       }
@@ -79,7 +85,7 @@ export const API = {
 
   // Check if origin is allowed
   isAllowedOrigin: (origin: string): boolean => {
-    return API.allowedOrigins.includes(origin);
+    return API.allowedOrigins.includes("*") || API.allowedOrigins.includes(origin);
   },
 
   // Initialize API with base URL from environment

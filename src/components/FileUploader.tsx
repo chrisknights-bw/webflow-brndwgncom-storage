@@ -283,7 +283,7 @@ export default function FileUploader() {
             transition: "all 0.3s ease",
           }}
         >
-          Simple Upload
+          Small File Upload
         </button>
         <button
           onClick={() => setUploadMode("multipart")}
@@ -299,7 +299,7 @@ export default function FileUploader() {
             transition: "all 0.3s ease",
           }}
         >
-          Multipart Upload
+          Large File (Multipart) Upload
         </button>
       </div>
 

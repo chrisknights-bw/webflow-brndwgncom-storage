@@ -4,24 +4,20 @@ import { buildLoginRedirect, getAuthConfig, isAuthed } from "./lib/auth";
 function isPublicPath(pathname: string, basePath: string): boolean {
 	const base = basePath.replace(/\/$/, "");
 
+	// Never treat the app root as public; it should always respect auth.
 	if (pathname === base || pathname === `${base}/`) return false;
 
-	// Auth pages
+	// Auth pages / endpoints
 	if (pathname === `${base}/login`) return true;
 	if (pathname === `${base}/api/login`) return true;
 	if (pathname === `${base}/api/logout`) return true;
 
-	// Public API endpoints for storage operations (used by external apps)
-	if (pathname === `${base}/api/upload`) return true;
-	if (pathname === `${base}/api/multipart-upload`) return true;
-	if (pathname === `${base}/api/list-assets`) return true;
-	if (pathname === `${base}/api/asset`) return true;
-
-	// Static assets
+	// Static assets (Astro build output, favicon, robots, etc.)
 	if (pathname.startsWith(`${base}/_astro/`)) return true;
 	if (pathname.startsWith(`${base}/favicon`)) return true;
 	if (pathname.startsWith(`${base}/robots.txt`)) return true;
 
+	// All other routes (including /api/*) require authentication
 	return false;
 }
 

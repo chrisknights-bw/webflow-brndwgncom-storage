@@ -148,7 +148,7 @@ const assetsPrefix = Astro.locals.runtime?.env?.ASSETS_PREFIX || '/app';
 		return filename.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i) !== null;
 	}
 
-	// File interface
+	// File interface used by the UI
 	interface FileItem {
 		name: string;
 		link: string;
@@ -166,7 +166,13 @@ const assetsPrefix = Astro.locals.runtime?.env?.ASSETS_PREFIX || '/app';
 				throw new Error('Failed to load files');
 			}
 			
-			const files = await response.json() as FileItem[];
+			const raw = await response.json() as Array<{ key: string; uploaded?: string }>;
+
+			const files: FileItem[] = raw.map((obj) => ({
+				name: obj.key,
+				link: `${assetsPrefix}/api/asset?key=${encodeURIComponent(obj.key)}`,
+				dateUploaded: obj.uploaded || new Date().toISOString(),
+			}));
 			
 			loadingFiles.classList.add('hidden');
 			
@@ -195,14 +201,48 @@ const assetsPrefix = Astro.locals.runtime?.env?.ASSETS_PREFIX || '/app';
 					<div class="card-body p-4">
 						<h3 class="card-title text-sm truncate" title="${file.name}">${file.name}</h3>
 						<p class="text-xs text-base-content/70">${formatDate(file.dateUploaded)}</p>
-						<div class="card-actions justify-end mt-2">
+						<div class="card-actions justify-end mt-2 gap-2">
 							<a href="${file.link}" target="_blank" class="btn btn-primary btn-xs">
 								View
 							</a>
+							<button
+								class="btn btn-error btn-xs"
+								type="button"
+								data-delete-key="${file.name}"
+							>
+								Delete
+							</button>
 						</div>
 					</div>
 				`;
 				
+				const deleteBtn = fileCard.querySelector('[data-delete-key]') as HTMLButtonElement | null;
+				if (deleteBtn) {
+					deleteBtn.addEventListener('click', async () => {
+						const key = deleteBtn.getAttribute('data-delete-key');
+						if (!key) return;
+
+						const confirmed = confirm(`Delete "${key}"? This cannot be undone.`);
+						if (!confirmed) return;
+
+						try {
+							const res = await fetch(`${assetsPrefix}/api/asset?key=${encodeURIComponent(key)}`, {
+								method: 'DELETE',
+							});
+
+							if (!res.ok) {
+								throw new Error('Failed to delete asset');
+							}
+
+							// Refresh list after delete
+							await loadFiles();
+						} catch (err) {
+							console.error('Error deleting asset:', err);
+							alert('Failed to delete asset. Please try again.');
+						}
+					});
+				}
+
 				filesList.appendChild(fileCard);
 			});
 		} catch (error) {
